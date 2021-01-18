@@ -8,6 +8,7 @@ import MenuItem from '@material-ui/core/MenuItem';
 import FormControl from '@material-ui/core/FormControl';
 import Select from '@material-ui/core/Select';
 import TextField from '@material-ui/core/TextField';
+import FavoriteIcon from '@material-ui/icons/Favorite';
 
 import { PokemonCard } from '../../components/PokemonCard/PokemonCard'
 
@@ -44,6 +45,22 @@ const useStyles = makeStyles((theme: Theme) =>
     filterOptions: {
       textAlign: 'center',
       marginTop: '90px',
+    },
+    pokemonFavoriteButton: {
+      margin: theme.spacing(1),
+      minWidth: 200,
+      height: 56
+    },
+    pokemonFavoriteButtonWrapper: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyItems: 'center'
+    },
+    pokemonFavoriteButtonIcon: {
+      marginRight: 10
+    },
+    loadMoreIcon: {
+      marginRight: 10
     }
   }),
 );
@@ -51,9 +68,12 @@ const useStyles = makeStyles((theme: Theme) =>
 export const Home = (): JSX.Element => {
     const [mount, setMount] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [seeFavorites, setSeeFavorites] = useState(true);
     const [pokemonList, setPokemonList] = useState<PokemonList>();
     const [pokemonListResults, setPokemonListResults] = useState<any[]>([]);
+    const [pokemonOriginalListResults, setPokemonOriginaListResults] = useState<any[]>([]);
     const [sort, setSort] = React.useState('');
+    const [nextRequest, setNextRequest] = useState('');
 
     const classes = useStyles();
 
@@ -63,6 +83,8 @@ export const Home = (): JSX.Element => {
       setLoading(false);
       setPokemonList(result);
       setPokemonListResults(result.results);
+      setPokemonOriginaListResults(result.results);
+      setNextRequest(result.next);
     }, []);
 
     useEffect(() => {
@@ -86,15 +108,13 @@ export const Home = (): JSX.Element => {
           setPokemonListResults(sortedList.reverse());
           break;
         default:
-          const originalResults = pokemonList !== undefined ? pokemonList.results : [];
-          setPokemonListResults(originalResults);
+          setPokemonListResults(pokemonOriginalListResults);
       }
     };
 
     const handleSearch = (event: React.ChangeEvent<{ value: unknown }>) => {
       let pokemonsMatched: Array<any> = [];
-      const originalResults = pokemonList !== undefined ? pokemonList.results : [];
-      const sortedList = _.find(originalResults, (p) => {
+      const sortedList = _.find(pokemonOriginalListResults, (p) => {
         const typedName = event.target.value as string;
         if(p.name.includes(typedName.toLowerCase())){
           pokemonsMatched.push(p);
@@ -102,6 +122,52 @@ export const Home = (): JSX.Element => {
       });
       setPokemonListResults(pokemonsMatched);
     };
+
+    const seeFavoritePokemons = (() => {
+      if(seeFavorites){
+        setSeeFavorites(false);
+        if(localStorage.favoritePokemons !== undefined) {
+          let favoritePokemons = JSON.parse(localStorage.favoritePokemons);
+          let favoritePokemonList: Array<any> = [];
+          favoritePokemons.map((pokemon: string) => {
+            const pokemonObj = {
+              name: pokemon
+            };
+            favoritePokemonList.push(pokemonObj);
+          });
+          setPokemonListResults(favoritePokemonList);
+        }
+      } else {
+        setSeeFavorites(true);
+        setPokemonListResults(pokemonOriginalListResults);
+      }
+    });
+
+    let favoriteLabel;
+
+    if(seeFavorites) {
+      favoriteLabel = (
+        <div className={classes.pokemonFavoriteButtonWrapper}>
+          <FavoriteIcon className={classes.pokemonFavoriteButtonIcon}/>
+          See My Favorite Pokemons
+        </div>
+      );
+    } else {
+      favoriteLabel = (
+        <div>
+          See all pokemons
+        </div>
+      );
+    }
+
+    const loadMorePokemons = useCallback(async () => {
+      const api = new PokemonApi();
+      const nameList = nextRequest.split("?");
+      const result: PokemonList = await api.getMorePokemons(nameList[1]);
+      setPokemonListResults(pokemonListResults.concat(result.results));
+      setPokemonOriginaListResults(pokemonOriginalListResults.concat(result.results));
+      setNextRequest(result.next);
+    }, [pokemonListResults, pokemonOriginalListResults, nextRequest]);
 
     return (
         <div className={classes.root}>
@@ -123,6 +189,9 @@ export const Home = (): JSX.Element => {
                 <MenuItem value='nameDesc'>Name: Z - A</MenuItem>
               </Select>
             </FormControl>
+            <Button variant="outlined" className={classes.pokemonFavoriteButton} onClick={seeFavoritePokemons}>
+              {favoriteLabel}
+            </Button>
           </div>
           <Container maxWidth='lg' className={classes.pokemonContainer}>
             {pokemonListResults.map((pokemon) => {
@@ -131,11 +200,13 @@ export const Home = (): JSX.Element => {
               );
             })}
           </Container>
-          <div className={classes.loadMoreWrapper}>
-            <Button variant="contained" color="primary">
-              <CachedIcon /> Load More Pokemons
-            </Button>
-          </div>
+          {seeFavorites &&
+            <div className={classes.loadMoreWrapper}>
+              <Button variant="contained" color="primary" onClick={loadMorePokemons}>
+                <CachedIcon className={classes.loadMoreIcon}/> Load More Pokemons
+              </Button>
+            </div>
+          }
         </div>
     )
 }
