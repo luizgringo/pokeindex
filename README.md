@@ -1,6 +1,8 @@
 
 # Pokéindex v1.0.0
 
+<img src="https://polar-woodland-20940.herokuapp.com/images/pokedex.gif" alt="Pokeindex" width="500" height="280 align="right">
+
 Pokéindex has the functionality of listing the main pokémons and their respective attributes.
 
 This project was created with:
@@ -10,6 +12,8 @@ This project was created with:
  - [Lodash](https://lodash.com/).
  - [Reach Router](https://reach.tech/router/).
  - [Jest](https://jestjs.io/).
+
+ You can see the entire app running on: [https://polar-woodland-20940.herokuapp.com/](https://polar-woodland-20940.herokuapp.com/).
 
 # How to run the Pokéindex?
 
