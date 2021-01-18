@@ -1,7 +1,7 @@
 
 # Pokéindex v1.0.0
 
-<img src="https://polar-woodland-20940.herokuapp.com/images/pokedex.gif" alt="Pokeindex" width="500" height="280 align="right">
+![Pokedex](https://polar-woodland-20940.herokuapp.com/images/pokedex.gif)
 
 Pokéindex has the functionality of listing the main pokémons and their respective attributes.
 
