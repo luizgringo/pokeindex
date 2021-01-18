@@ -13,6 +13,7 @@ This project was created with:
  - [Reach Router](https://reach.tech/router/).
  - [Jest](https://jestjs.io/).
  - [Heroku](https://heroku.com/).
+ - [PokéAPI](https://pokeapi.co/).
 
  You can see the entire app running on: [https://pokeindex-app.herokuapp.com/](https://pokeindex-app.herokuapp.com/).
 
