@@ -22,4 +22,9 @@ export default class PokemonApi extends HttpClient {
     return result as Pokemon;
   });
 
+  public getPokemonTypes = async () => this.instance.get<PokemonList>('/type').then(response => {
+    const result = response as unknown;
+    return result as PokemonList;
+  });
+
 }

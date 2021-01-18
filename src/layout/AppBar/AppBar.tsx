@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import clsx from 'clsx';
 import {makeStyles, useTheme, Theme, createStyles} from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
@@ -14,6 +14,11 @@ import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import ChevronRightIcon from '@material-ui/icons/ChevronRight';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
+
+import PokemonApi from '../../api/PokemonApi';
+import { PokemonTypes } from '../../models/PokemonTypes';
+
+import _ from 'lodash';
 
 const drawerWidth = 240;
 
@@ -106,10 +111,13 @@ const useStyles = makeStyles((theme : Theme) => createStyles({
 }),);
 
 export default function PersistentDrawerLeft() {
+    const [open, setOpen] = useState(false);
+    const [mount, setMount] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [pokemonTypes, setPokemonTypes] = useState<PokemonTypes>();
+
     const classes = useStyles();
     const theme = useTheme();
-    const [open,
-        setOpen] = React.useState(false);
 
     const handleDrawerOpen = () => {
         setOpen(true);
@@ -118,6 +126,20 @@ export default function PersistentDrawerLeft() {
     const handleDrawerClose = () => {
         setOpen(false);
     };
+
+    const fetchData = useCallback(async () => {
+        const api = new PokemonApi();
+        const result: PokemonTypes = await api.getPokemonTypes();
+        setPokemonTypes(result);
+      }, []);
+
+      useEffect(() => {
+        if(!mount) {
+          setMount(true);
+          setLoading(true);
+          fetchData();
+        }
+      },[fetchData, loading, mount]);
 
     return (
         <div className={classes.root}>
@@ -170,11 +192,11 @@ export default function PersistentDrawerLeft() {
                     <div className="titleText">Pokemon Types</div>
                 </div>
                 <List>
-                    {['Inbox', 'Starred', 'Send email', 'Drafts'].map((text, index) => (
-                        <ListItem button key={text}>
-                            <ListItemText primary={text}/>
+                    {pokemonTypes !== undefined ? pokemonTypes.results.map((type, index) => (
+                        <ListItem button key={_.startCase(type.name)}>
+                            <ListItemText primary={_.startCase(type.name)}/>
                         </ListItem>
-                    ))}
+                    )) : ''}
                 </List>
             </Drawer>
             <main
